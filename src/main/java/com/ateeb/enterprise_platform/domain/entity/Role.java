@@ -2,6 +2,9 @@ package com.ateeb.enterprise_platform.domain.entity;
 
 import com.ateeb.enterprise_platform.domain.enums.AppPermission;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +21,7 @@ import java.util.Set;
                 )
         }
 )
+@Getter @Setter @NoArgsConstructor
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
