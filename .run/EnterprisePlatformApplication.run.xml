@@ -4,6 +4,8 @@
       <env name="DB_URL" value="jdbc:mysql://localhost:3306/enterprise_platform" />
       <env name="DB_USERNAME" value="root" />
       <env name="DB_PASSWORD" value="@Ib30082004" />
+      <env name="PLATFORM_ADMIN_EMAIL" value="ateeburrahaman3@gmail.com" />
+      <env name="PLATFORM_ADMIN_PASSWORD" value="@Ib30082004" />
     </envs>
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
     <module name="enterprise_platform" />
