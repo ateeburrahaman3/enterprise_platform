@@ -26,9 +26,9 @@ public class PlatformDataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("{platform.bootstrap.admin-email}")
+    @Value("${platform.bootstrap.admin-email}")
     private String adminEmail;
-    @Value("{platform.bootstrap.admin-password}")
+    @Value("${platform.bootstrap.admin-password}")
     private String adminPassword;
 
     public static final String SYSTEM_COMPANY_NAME = "SYSTEM_PLATFORM";

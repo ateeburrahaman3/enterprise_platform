@@ -1,11 +1,13 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="EnterprisePlatformApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
+      <env name="DB_PASSWORD" value="@Ib30082004" />
       <env name="DB_URL" value="jdbc:mysql://localhost:3306/enterprise_platform" />
       <env name="DB_USERNAME" value="root" />
-      <env name="DB_PASSWORD" value="@Ib30082004" />
       <env name="PLATFORM_ADMIN_EMAIL" value="ateeburrahaman3@gmail.com" />
       <env name="PLATFORM_ADMIN_PASSWORD" value="@Ib30082004" />
+      <env name="JWT_SECRET" value="404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970" />
+      <env name="JWT_EXPIRATION_MS" value="86400000" />
     </envs>
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
     <module name="enterprise_platform" />
