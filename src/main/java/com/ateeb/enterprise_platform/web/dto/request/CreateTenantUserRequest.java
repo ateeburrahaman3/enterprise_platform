@@ -14,6 +14,5 @@ public record CreateTenantUserRequest(
         @NotEmpty(message = "User must be assigned at least one role ID")
         Set<Long> roleIds,
 
-        // Safeguard flag: required to be true if assigning the ADMIN role
         boolean confirmAdminCreation
 ) {}

@@ -30,16 +30,15 @@ public class AuthService {
     private long jwtExpirationMs;
 
     public AuthResponse login(LoginRequest request) {
-        // 1. Delegate authentication to Spring's AuthenticationManager
-        // This invokes CustomUserDetailsService and verifies BCrypt password automatically
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
-        // 2. Extract our authenticated CustomUserDetails principal
+
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        // 3. Generate the signed JWT token with all tenant claims
+
         String token = jwtService.generateToken(userDetails);
 
         return new AuthResponse(

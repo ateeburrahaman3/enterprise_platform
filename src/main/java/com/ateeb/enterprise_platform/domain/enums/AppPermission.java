@@ -16,5 +16,10 @@ public enum AppPermission {
     ROLE_CREATE,
     ROLE_READ,
     ROLE_UPDATE,
-    ROLE_DELETE
+    ROLE_DELETE,
+
+    TASK_CREATE,
+    TASK_READ,
+    TASK_UPDATE,
+    TASK_DELETE
 }
