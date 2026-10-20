@@ -3,11 +3,14 @@ package com.ateeb.enterprise_platform.web;
 import com.ateeb.enterprise_platform.web.dto.response.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.authorization.ExpressionAuthorizationDecision;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,6 +21,9 @@ import java.util.List;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @Value("${application.security.expose-rule-details:false}")
+    private boolean exposeRuleDetails;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationErrors(
@@ -52,7 +58,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleBadCredentials(
             BadCredentialsException ex,
@@ -66,7 +71,6 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
-
 
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ApiErrorResponse> handleDisabledAccount(
@@ -82,31 +86,37 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request
     ) {
+        String message = "You do not have sufficient privileges to access this resource";
+
+        if (ex.getMessage() != null && !ex.getMessage().equalsIgnoreCase("Access Denied")) {
+            message = ex.getMessage();
+        } else if (exposeRuleDetails && ex instanceof AuthorizationDeniedException deniedEx) {
+            if (deniedEx.getAuthorizationResult() instanceof ExpressionAuthorizationDecision decision) {
+                message = "Access Denied: Missing authorization rule ["
+                        + decision.getExpression().getExpressionString() + "]";
+            }
+        }
+
         ApiErrorResponse response = ApiErrorResponse.of(
                 HttpStatus.FORBIDDEN.value(),
                 "ACCESS_DENIED",
-                ex.getMessage() != null ? ex.getMessage() : "You do not have permission to access this resource",
+                message,
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
-
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnhandledExceptions(
             Exception ex,
             HttpServletRequest request
     ) {
-
-
         log.error("Unhandled server exception at path {}: ", request.getRequestURI(), ex);
-
 
         ApiErrorResponse response = ApiErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
