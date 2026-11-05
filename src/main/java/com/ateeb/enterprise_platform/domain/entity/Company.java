@@ -18,14 +18,18 @@ public class Company {
     @Column(nullable = false, unique = true,length = 100)
     private String name;
 
+    @Column(nullable = false, length = 150)
+    private String adminEmail;
+
     @Column(nullable = false)
     private boolean active= true;
 
     @Column(nullable = false,updatable = false)
     private Instant createdAt = Instant.now();
 
-    public Company(String name) {
+    public Company(String name,String adminEmail) {
         this.name = name;
+        this.adminEmail = adminEmail;
         this.active = true;
         this.createdAt = Instant.now();
     }

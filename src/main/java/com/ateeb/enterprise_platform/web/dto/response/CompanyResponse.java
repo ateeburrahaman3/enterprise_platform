@@ -6,8 +6,7 @@ public record CompanyResponse(
         Long companyId,
         String companyName,
         String adminEmail,
-        String initialPassword,
-        boolean mustChangePassword,
+        boolean active,
         Instant createdAt
 ) {
 }

@@ -1,5 +1,6 @@
 package com.ateeb.enterprise_platform.service;
 
+import com.ateeb.enterprise_platform.config.PlatformDataSeeder;
 import com.ateeb.enterprise_platform.domain.entity.Company;
 import com.ateeb.enterprise_platform.domain.entity.Role;
 import com.ateeb.enterprise_platform.domain.entity.User;
@@ -8,6 +9,7 @@ import com.ateeb.enterprise_platform.repository.CompanyRepository;
 import com.ateeb.enterprise_platform.repository.RoleRepository;
 import com.ateeb.enterprise_platform.repository.UserRepository;
 import com.ateeb.enterprise_platform.web.dto.request.CreateCompanyRequest;
+import com.ateeb.enterprise_platform.web.dto.response.CompanyProvisionResponse;
 import com.ateeb.enterprise_platform.web.dto.response.CompanyResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,7 +33,7 @@ public class CompanyService {
     public static final String DEFAULT_STARTING_PASSWORD = "12345678";
 
     @Transactional
-    public CompanyResponse provisionCompany(CreateCompanyRequest request){
+    public CompanyProvisionResponse provisionCompany(CreateCompanyRequest request){
         if(companyRepository.existsByName(request.companyName())){
             throw new IllegalArgumentException("Company with name '" + request.companyName() + "' already exists");
         }
@@ -39,7 +42,7 @@ public class CompanyService {
             throw new IllegalArgumentException("User with email '" + request.adminEmail() + "' is already registered");
         }
 
-        Company company = companyRepository.save(new Company(request.companyName()));
+        Company company = companyRepository.save(new Company(request.companyName(), request.adminEmail()));
 
         Role adminRole = new Role(DEFAULT_ADMIN_ROLE, company);
 
@@ -61,14 +64,41 @@ public class CompanyService {
         adminUser.addRole(adminRole);
         userRepository.save(adminUser);
 
-        return new CompanyResponse(
+        return new CompanyProvisionResponse(
                 company.getId(),
                 company.getName(),
-                adminUser.getEmail(),
+                company.getAdminEmail(),
+                company.isActive(),
                 DEFAULT_STARTING_PASSWORD,
                 adminUser.isMustChangePassword(),
                 company.getCreatedAt()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<CompanyResponse> getAllCompanies(){
+        return companyRepository.findAll().stream()
+                .map(c -> new CompanyResponse(
+                        c.getId(),
+                        c.getName(),
+                        c.getAdminEmail(),
+                        c.isActive(),
+                        c.getCreatedAt()
+                ))
+                .toList();
+    }
+
+    @Transactional
+    public void updateCompanyStatus(String companyName,boolean active){
+        Company company = companyRepository.findByName(companyName)
+                .orElseThrow(()-> new
+                        IllegalArgumentException("Company '" + companyName + "' not found"));
+
+        if(company.getName().equals(PlatformDataSeeder.SYSTEM_COMPANY_NAME) && !active){
+            throw new IllegalArgumentException("The Root System Company cannot be deactivated");
+        }
+
+        company.setActive(active);
     }
 
 }

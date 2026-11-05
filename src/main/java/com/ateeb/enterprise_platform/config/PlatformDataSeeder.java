@@ -42,7 +42,7 @@ public class PlatformDataSeeder implements CommandLineRunner {
         Company systemCompany = companyRepository.findByName(SYSTEM_COMPANY_NAME)
                 .orElseGet(()-> {
                     log.info("Creating Root System Tenant: {}", SYSTEM_COMPANY_NAME);
-                    return companyRepository.save(new Company(SYSTEM_COMPANY_NAME));
+                    return companyRepository.save(new Company(SYSTEM_COMPANY_NAME,developerEmail));
                 });
 
         Role superAdminRole = roleRepository.findByCompanyIdAndName(systemCompany.getId(), SUPER_ADMIN_ROLE_NAME)
