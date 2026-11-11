@@ -1,6 +1,7 @@
 package com.ateeb.enterprise_platform.config;
 
 import com.ateeb.enterprise_platform.security.JwtAuthenticationFilter;
+import com.ateeb.enterprise_platform.security.PasswordChangeRequiredFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final PasswordChangeRequiredFilter passwordChangeRequiredFilter;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -38,7 +40,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**","/error").permitAll()
                 .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(passwordChangeRequiredFilter,JwtAuthenticationFilter.class);
 
         return http.build();
     }
