@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
@@ -75,6 +76,20 @@ public class GlobalExceptionHandler {
                 HttpStatus.FORBIDDEN.value(),
                 "ACCOUNT_DISABLED",
                 "Your account or company has been deactivated",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse response = ApiErrorResponse.of(
+                HttpStatus.FORBIDDEN.value(),
+                "ACCESS_DENIED",
+                ex.getMessage() != null ? ex.getMessage() : "You do not have permission to access this resource",
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
