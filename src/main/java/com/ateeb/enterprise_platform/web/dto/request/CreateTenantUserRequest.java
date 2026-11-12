@@ -12,6 +12,7 @@ public record CreateTenantUserRequest(
         String email,
 
         @NotEmpty(message = "User must be assigned at least one role name")
-        Set<String> roleNames
-) {
-}
+        Set<String> roleNames,
+
+        boolean confirmAdminCreation
+) {}
