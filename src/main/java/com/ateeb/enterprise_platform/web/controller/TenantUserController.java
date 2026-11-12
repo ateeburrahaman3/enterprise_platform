@@ -4,6 +4,7 @@ import com.ateeb.enterprise_platform.security.CustomUserDetails;
 import com.ateeb.enterprise_platform.service.UserService;
 import com.ateeb.enterprise_platform.web.dto.request.CreateTenantUserRequest;
 import com.ateeb.enterprise_platform.web.dto.request.UpdateStatusRequest;
+import com.ateeb.enterprise_platform.web.dto.request.UpdateUserRolesRequest;
 import com.ateeb.enterprise_platform.web.dto.response.TenantUserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,16 @@ public class TenantUserController {
             @Valid @RequestBody UpdateStatusRequest request
     ) {
         return ResponseEntity.ok(userService.updateUserStatus(currentUser, email, request));
+    }
+
+    @PutMapping("/{email}/roles")
+    @PreAuthorize("hasAuthority('USER_ASSIGN_ROLE')")
+    public ResponseEntity<TenantUserResponse> updateUserRoles(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PathVariable String email,
+            @Valid @RequestBody UpdateUserRolesRequest request
+    ) {
+        return ResponseEntity.ok(userService.updateUserRoles(currentUser, email, request));
     }
 
     @DeleteMapping("/{email}")

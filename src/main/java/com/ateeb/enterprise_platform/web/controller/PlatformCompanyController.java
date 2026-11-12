@@ -34,6 +34,11 @@ public class PlatformCompanyController {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
+    @GetMapping("/{companyName}")
+    public ResponseEntity<CompanyResponse> getCompanyByName(@PathVariable String companyName) {
+        return ResponseEntity.ok(companyService.getCompanyByName(companyName));
+    }
+
     @PatchMapping("{companyName}/status")
     public ResponseEntity<Void> updateCompanyStatus(
             @PathVariable String companyName,
@@ -43,4 +48,6 @@ public class PlatformCompanyController {
         return ResponseEntity.noContent().build();
 
     }
+
+
 }

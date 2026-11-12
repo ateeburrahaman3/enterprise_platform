@@ -10,6 +10,7 @@ import com.ateeb.enterprise_platform.repository.UserRepository;
 import com.ateeb.enterprise_platform.security.CustomUserDetails;
 import com.ateeb.enterprise_platform.web.dto.request.CreateTenantUserRequest;
 import com.ateeb.enterprise_platform.web.dto.request.UpdateStatusRequest;
+import com.ateeb.enterprise_platform.web.dto.request.UpdateUserRolesRequest;
 import com.ateeb.enterprise_platform.web.dto.response.TenantUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -137,6 +139,62 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    @Transactional
+    public TenantUserResponse updateUserRoles(CustomUserDetails currentUser, String email, UpdateUserRolesRequest request) {
+        Long companyId = currentUser.getCompanyId();
+
+        User user = userRepository.findByCompanyIdAndEmail(companyId, email)
+                .orElseThrow(() -> new IllegalArgumentException("User '" + email + "' not found in your company"));
+
+        List<Role> roles = roleRepository.findAllByCompanyIdAndNameIn(companyId, request.roleNames());
+        if (roles.size() != request.roleNames().size()) {
+            Set<String> foundNames = roles.stream().map(Role::getName).collect(Collectors.toSet());
+            Set<String> missingNames = request.roleNames().stream()
+                    .filter(name -> !foundNames.contains(name))
+                    .collect(Collectors.toSet());
+            throw new IllegalArgumentException("The following roles do not exist in your company: " + missingNames);
+        }
+
+        Set<String> validPermissionNames = Arrays.stream(AppPermission.values())
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+
+        Set<AppPermission> callerPermissions = currentUser.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())
+                .filter(validPermissionNames::contains)
+                .map(AppPermission::valueOf)
+                .collect(Collectors.toSet());
+
+        boolean isAssigningAdmin = false;
+        for (Role role : roles) {
+            if (role.getName().equalsIgnoreCase(ADMIN_ROLE_NAME)) {
+                isAssigningAdmin = true;
+            }
+
+            if (!callerPermissions.containsAll(role.getPermissions())) {
+                throw new AccessDeniedException(
+                        "Privilege Escalation Denied: You cannot assign role '" + role.getName() +
+                                "' because it contains permissions you do not possess"
+                );
+            }
+        }
+
+        if (isAssigningAdmin && !request.confirmAdminCreation()) {
+            throw new IllegalArgumentException(
+                    "Assigning the ADMIN role requires explicit confirmation. Please set confirmAdminCreation to true."
+            );
+        }
+
+        if (currentUser.getUsername().equalsIgnoreCase(email) && !isAssigningAdmin) {
+            throw new IllegalArgumentException("Self-Demotion Prohibited: You cannot remove the root ADMIN role from your own account");
+        }
+
+        user.setRoles(new HashSet<>(roles));
+        User savedUser = userRepository.save(user);
+
+        return toResponse(savedUser);
+    }
+
     private TenantUserResponse toResponse(User user) {
         Set<String> roleNames = user.getRoles().stream()
                 .map(Role::getName)
@@ -152,4 +210,6 @@ public class UserService {
                 user.getCreatedAt()
         );
     }
+
+
 }

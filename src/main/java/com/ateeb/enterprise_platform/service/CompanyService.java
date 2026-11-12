@@ -88,6 +88,20 @@ public class CompanyService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public CompanyResponse getCompanyByName(String companyName) {
+        Company company = companyRepository.findByName(companyName)
+                .orElseThrow(() -> new IllegalArgumentException("Company '" + companyName + "' not found"));
+
+        return new CompanyResponse(
+                company.getId(),
+                company.getName(),
+                company.getAdminEmail(),
+                company.isActive(),
+                company.getCreatedAt()
+        );
+    }
+
     @Transactional
     public void updateCompanyStatus(String companyName,boolean active){
         Company company = companyRepository.findByName(companyName)
