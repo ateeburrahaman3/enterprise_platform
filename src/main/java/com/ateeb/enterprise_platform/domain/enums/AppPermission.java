@@ -17,4 +17,11 @@ public enum AppPermission {
     ROLE_READ,
     ROLE_UPDATE,
     ROLE_DELETE,
+
+    // Task Management Business Permissions
+    TASK_CREATE,
+    TASK_READ,
+    TASK_UPDATE,
+    TASK_DELETE
+
 }
