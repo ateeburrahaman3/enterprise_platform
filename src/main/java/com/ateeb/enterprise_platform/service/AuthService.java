@@ -4,6 +4,7 @@ import com.ateeb.enterprise_platform.domain.entity.User;
 import com.ateeb.enterprise_platform.repository.UserRepository;
 import com.ateeb.enterprise_platform.security.CustomUserDetails;
 import com.ateeb.enterprise_platform.security.JwtService;
+import com.ateeb.enterprise_platform.security.TokenRevocationService;
 import com.ateeb.enterprise_platform.web.dto.request.ChangePasswordRequest;
 import com.ateeb.enterprise_platform.web.dto.request.LoginRequest;
 import com.ateeb.enterprise_platform.web.dto.response.AuthResponse;
@@ -24,6 +25,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenRevocationService tokenRevocationService;
 
     @Value("${application.security.jwt.expiration-ms}")
     private long jwtExpirationMs;
@@ -46,8 +48,14 @@ public class AuthService {
         );
     }
 
+    public void logout(String token) {
+        tokenRevocationService.revokeToken(token);
+    }
+
     @Transactional
-    public AuthResponse changePassword(CustomUserDetails currentUser,ChangePasswordRequest request) {
+    public AuthResponse changePassword(CustomUserDetails currentUser,
+                                       ChangePasswordRequest request,
+                                       String oldToken) {
 
         User user = userRepository.findById(currentUser.getUserId())
                 .orElseThrow(() -> new
@@ -65,6 +73,10 @@ public class AuthService {
 
         user.setMustChangePassword(false);
         userRepository.save(user);
+
+        if(oldToken != null && !oldToken.isBlank()) {
+            tokenRevocationService.revokeToken(oldToken);
+        }
 
         CustomUserDetails updatedDetail = new CustomUserDetails(
                 user.getId(),

@@ -11,6 +11,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -36,6 +37,7 @@ public class JwtService {
         long now = System.currentTimeMillis();
 
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(userDetails.getUsername())
                 .claim("userId", userDetails.getUserId())
                 .claim("companyId", userDetails.getCompanyId())
@@ -49,6 +51,16 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractTokenId(String token) {
+        return extractClaim(token, Claims::getId);
+    }
+
+    public long getRemainingExpirationMs(String token) {
+        Date expiration = extractClaim(token, Claims::getExpiration);
+        long remaining =  expiration.getTime() - System.currentTimeMillis();
+        return Math.max(0, remaining);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
