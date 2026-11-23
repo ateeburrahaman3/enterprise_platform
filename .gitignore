@@ -38,3 +38,21 @@ application-local.yml
 *.local
 .env
 .env.*
+
+### Environment and secrets ###
+!.env.example
+
+### Local IDE run configurations ###
+.run/
+
+### Logs ###
+*.log
+logs/
+
+### OS generated files ###
+.DS_Store
+Thumbs.db
+
+### Temporary files ###
+*.tmp
+*.swp
