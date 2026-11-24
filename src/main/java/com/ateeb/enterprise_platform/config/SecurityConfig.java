@@ -3,6 +3,7 @@ package com.ateeb.enterprise_platform.config;
 import com.ateeb.enterprise_platform.security.JwtAuthenticationFilter;
 import com.ateeb.enterprise_platform.security.PasswordChangeRequiredFilter;
 import com.ateeb.enterprise_platform.security.TenantRateLimiterFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,10 +39,26 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(
+                                        HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"
+                                ))
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(
+                                        HttpServletResponse.SC_FORBIDDEN, "Forbidden"
+                                ))
+                )
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**","/error").permitAll()
+
+                        .requestMatchers("/api/auth/login").permitAll()
+
+                        .requestMatchers("/error").permitAll()
+
                 .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(passwordChangeRequiredFilter,JwtAuthenticationFilter.class)
                 .addFilterAfter(tenantRateLimiterFilter,PasswordChangeRequiredFilter.class);

@@ -1,5 +1,6 @@
 package com.ateeb.enterprise_platform.web;
 
+import com.ateeb.enterprise_platform.security.TokenRevocationService;
 import com.ateeb.enterprise_platform.web.dto.response.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -108,6 +109,25 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+    }
+
+    @ExceptionHandler(TokenRevocationService.TokenRevocationUnavailableException.class)
+    public ResponseEntity<ApiErrorResponse> handleRevocationUnavailable(
+            TokenRevocationService.TokenRevocationUnavailableException ex,
+            HttpServletRequest request
+    ) {
+        log.error("Token revocation operation unavailable: ", ex);
+
+        ApiErrorResponse response = ApiErrorResponse.of(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                "TOKEN_REVOCATION_UNAVAILABLE",
+                "Token revocation service is temporarily unavailable. Please try again.",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(response);
     }
 
 

@@ -5,6 +5,7 @@ import com.ateeb.enterprise_platform.repository.UserRepository;
 import com.ateeb.enterprise_platform.security.CustomUserDetails;
 import com.ateeb.enterprise_platform.security.JwtService;
 import com.ateeb.enterprise_platform.security.TokenRevocationService;
+import com.ateeb.enterprise_platform.security.TokenStorageAvailabilityService;
 import com.ateeb.enterprise_platform.web.dto.request.ChangePasswordRequest;
 import com.ateeb.enterprise_platform.web.dto.request.LoginRequest;
 import com.ateeb.enterprise_platform.web.dto.response.AuthResponse;
@@ -26,18 +27,22 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenRevocationService tokenRevocationService;
+    private final TokenStorageAvailabilityService tokenStorageAvailabilityService;
 
     @Value("${application.security.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
     public AuthResponse login(LoginRequest request) {
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String token = jwtService.generateToken(userDetails);
+        String revocationStore = tokenStorageAvailabilityService.selectStoreForNewToken();
+
+        String token = jwtService.generateToken(userDetails, revocationStore);
 
         return new AuthResponse(
                 token,
@@ -88,7 +93,9 @@ public class AuthService {
                 currentUser.getAuthorities()
         );
 
-        String newToken = jwtService.generateToken(updatedDetail);
+        String revocationStore = tokenStorageAvailabilityService.selectStoreForNewToken();
+
+        String newToken = jwtService.generateToken(updatedDetail, revocationStore);
 
         return new AuthResponse(
                 newToken,
