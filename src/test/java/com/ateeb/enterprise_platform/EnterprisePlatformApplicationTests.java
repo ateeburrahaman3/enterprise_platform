@@ -3,7 +3,9 @@ package com.ateeb.enterprise_platform;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(
+		useMainMethod = SpringBootTest.UseMainMethod.ALWAYS
+)
 class EnterprisePlatformApplicationTests {
 
 	@Test
