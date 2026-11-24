@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class PlatformCompanyController {
     private final CompanyService companyService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('PLATFORM_COMPANY_CREATE')")
     public ResponseEntity<CompanyProvisionResponse> createCompany(
             @Valid @RequestBody CreateCompanyRequest request
     ){
@@ -29,17 +31,21 @@ public class PlatformCompanyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+
     @GetMapping
+    @PreAuthorize("hasAuthority('PLATFORM_COMPANY_READ')")
     public ResponseEntity<List<CompanyResponse>> getAllCompanies(){
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
     @GetMapping("/{companyName}")
+    @PreAuthorize("hasAuthority('PLATFORM_COMPANY_READ')")
     public ResponseEntity<CompanyResponse> getCompanyByName(@PathVariable String companyName) {
         return ResponseEntity.ok(companyService.getCompanyByName(companyName));
     }
 
     @PatchMapping("{companyName}/status")
+    @PreAuthorize("hasAuthority('PLATFORM_COMPANY_UPDATE')")
     public ResponseEntity<Void> updateCompanyStatus(
             @PathVariable String companyName,
             @Valid @RequestBody UpdateStatusRequest request){
